@@ -1,0 +1,6 @@
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pokedex-prod"
+database_id = "ab923d00-ce57-4978-a3ed-90b3e22ddf2a"
