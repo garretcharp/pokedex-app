@@ -1,5 +1,5 @@
 export const runtime = "edge";
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function Pokedex() {
   return (
