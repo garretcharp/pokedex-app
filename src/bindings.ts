@@ -1,3 +1,3 @@
 import { binding } from "cf-bindings-proxy";
 
-export const db = binding<D1Database>("DB");
+export const db: D1Database = process.env.DB as any as D1Database ?? binding<D1Database>("DB");
