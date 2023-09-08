@@ -1,9 +1,11 @@
 'use client';
 import { catchPokemon, releasePokemon } from "@/actions";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function PokemonCatchReleaseForm({ id, caught }: { id: string, caught: boolean }) {
+export default function PokemonCatchReleaseForm({ id, caught, reload }: { id: string, caught: boolean, reload?: boolean }) {
   const [isCaught, setIsCaught] = useState(caught);
+  const router = useRouter()
 
   return (
     <form action={async (data) => {
@@ -13,6 +15,10 @@ export default function PokemonCatchReleaseForm({ id, caught }: { id: string, ca
       } else {
         await catchPokemon(data);
         setIsCaught(true);
+      }
+
+      if (reload) {
+        router.refresh();
       }
     }}>
       <input type="hidden" name="id" value={id} />

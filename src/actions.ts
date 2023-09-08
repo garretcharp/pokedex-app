@@ -2,6 +2,25 @@
 import z from "zod";
 import { db } from "@/bindings";
 
+const PokemonListSchema = z.object({
+  results: z.array(
+    z.object({
+      name: z.string(),
+      url: z.string(),
+    })
+  ),
+})
+
+export async function getPokemonList() {
+  const data = await fetch("https://pokeapi.co/api/v2/pokemon?limit=100000").then((res) => {
+    if (res.status !== 200) throw new Error("Failed to fetch");
+
+    return res.json();
+  });
+
+  return PokemonListSchema.parse(data).results;
+}
+
 const PokemonSchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -70,4 +89,16 @@ export async function isPokemonCaught(id: string) {
   console.log({ data })
 
   return !!data
+}
+
+export async function getPokedex() {
+  const data = await db.prepare('SELECT * FROM Pokedex').all();
+
+  return PokemonSchema.omit({ moves: true }).array().parse(
+    data.results.map((pokemon: any) => ({
+      ...pokemon,
+      abilities: JSON.parse(pokemon.abilities),
+      types: JSON.parse(pokemon.types),
+    }))
+  );
 }
