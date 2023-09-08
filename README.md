@@ -1,8 +1,6 @@
-# Minimal repo for NextJS local development with D1 and KV bindings
+# Pokedex App
 
-This repo shows how to use cf-bindings-proxy to use D1 and KV in local development with NextJS.
-
-Deployed version: https://next-on-cloudflare-boy.pages.dev
+Deployed version: https://master.pokedex-8w1.pages.dev/
 
 ## How to run?
 
