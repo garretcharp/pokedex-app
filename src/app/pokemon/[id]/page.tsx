@@ -1,12 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 import z from "zod";
 import { getPokemonImage } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { db } from "@/bindings";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "edge";
-export const revalidate = 3600;
+export const revalidate = 0;
 
 const PokemonSchema = z.object({
   id: z.number(),
@@ -45,8 +47,51 @@ async function getPokemon(id: string) {
   return PokemonSchema.parse(data);
 }
 
-export default async function ViewPokemon({ params: { id } }: { params: { id: string } }) {
+async function isPokemonCaught(id: string) {
+  const data = await db.prepare('SELECT * FROM Pokedex WHERE id = ?').bind(Number(id)).first();
+
+  console.log({ data })
+
+  return !!data
+}
+
+async function catchPokemon(form: FormData) {
+  "use server";
+  const id = form.get("id");
+
+  if (typeof id !== "string") throw new Error("Invalid ID");
+
   const pokemon = await getPokemon(id);
+
+  await db.prepare('INSERT INTO Pokedex (id, name, abilities, types) VALUES (?, ?, ?, ?)').bind(
+    pokemon.id,
+    pokemon.name,
+    JSON.stringify(pokemon.abilities),
+    JSON.stringify(pokemon.types),
+  ).run()
+
+  revalidatePath(`/pokemon/${id}`)
+  revalidatePath(`/pokedex`)
+}
+
+async function releasePokemon(form: FormData) {
+  "use server";
+  const id = form.get("id");
+
+  if (typeof id !== "string") throw new Error("Invalid ID");
+  else if (Number.isNaN(Number(id))) throw new Error("Invalid ID");
+
+  await db.prepare('DELETE FROM Pokedex WHERE id = ?').bind(Number(id)).run()
+
+  revalidatePath(`/pokemon/${id}`)
+  revalidatePath(`/pokedex`)
+}
+
+export default async function ViewPokemon({ params: { id } }: { params: { id: string } }) {
+  const [pokemon, isCaught] = await Promise.all([
+    getPokemon(id),
+    isPokemonCaught(id),
+  ]);
 
   return (
     <Card className="flex flex-col items-center">
@@ -95,6 +140,15 @@ export default async function ViewPokemon({ params: { id } }: { params: { id: st
             ))}
           </div>
         </div>
+
+        <Separator className="my-4" />
+
+        <form action={isCaught ? releasePokemon : catchPokemon}>
+          <input type="hidden" name="id" value={pokemon.id} />
+          <button className="bg-blue-500 text-white rounded-lg px-5 py-2">
+            {!isCaught ? "Catch Pokemon" : "Release Pokemon"}
+          </button>
+        </form>
       </CardFooter>
     </Card>
   );

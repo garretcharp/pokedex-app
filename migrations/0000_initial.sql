@@ -7,6 +7,5 @@ CREATE TABLE
         "id" INTEGER NOT NULL PRIMARY KEY,
         "name" TEXT NOT NULL,
         "types" TEXT NOT NULL,
-        "moves" TEXT NOT NULL,
         "abilities" TEXT NOT NULL
     );
