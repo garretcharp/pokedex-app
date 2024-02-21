@@ -1,4 +1,4 @@
-# Pokedex App
+# PokedexApp
 
 Deployed version: https://master.pokedex-8w1.pages.dev/
 
